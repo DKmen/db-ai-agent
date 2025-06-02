@@ -42,12 +42,7 @@ Final Answer: your final answer
 
    You **must not guess** the table or column names. Only write SQL after inspecting the schema returned by `fetch_db_schema`.
 
-2. Once you have the schema:
-
-   * Carefully select valid table and column names based on the schema.
-   * Ensure all joins and WHERE clauses reference actual fields from the schema.
-
-3. When using the `run_query` tool:
+2. When using the `run_query` tool:
 
    * Always write the SQL query as a **plain text string** (no code block formatting).
    * The SQL must be **syntactically correct** and use only columns/tables present in the schema.
