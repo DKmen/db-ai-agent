@@ -1,12 +1,7 @@
-from dotenv import load_dotenv
-
-from app.agent import executor
-
-# Load environment variables from .env file
-load_dotenv()
+from app.agents import db_agent_executor
 
 if __name__ == "__main__":
-    result = executor.invoke({
-        "input": "Normal User is able to create new user if not why ?",
+    result = db_agent_executor.invoke({
+        "input": "Give me information about this id e0604fd2-2888-4488-a827-81acdb7c98cc",
     })
     print(result)

@@ -1,13 +1,14 @@
-import os
-
 from langchain_google_genai import ChatGoogleGenerativeAI
 from langchain.agents import create_react_agent, AgentExecutor
 from langchain.prompts import PromptTemplate
+from langchain.memory.chat_message_histories import RedisChatMessageHistory
+from langchain.memory import ConversationBufferMemory
 
 from app.tools import tools
+from app.constants import config
 
 llm = ChatGoogleGenerativeAI(
-    model="gemini-2.0-flash", 
+    model=config["GEMINI_MODEL_ID"], 
     temperature=0.8,
 )
 
@@ -62,11 +63,30 @@ Question: {input}
 {agent_scratchpad}
 """)
 
-agent = create_react_agent(llm=llm, tools=tools, prompt=prompt)
+history = RedisChatMessageHistory(
+    session_id="user_123",
+    url="redis://localhost:6379"
+)
 
-executor = AgentExecutor.from_agent_and_tools(
-    agent=agent,
+memory = ConversationBufferMemory(
+    chat_memory=history,
+    return_messages=True,
+    memory_key="chat_history"
+)
+
+db_agent = create_react_agent(llm=llm, tools=tools, prompt=prompt)
+
+db_agent_executor = AgentExecutor.from_agent_and_tools(
+    agent=db_agent,
     tools=tools,
     verbose=True,
     handle_parsing_errors=True,
 )
+
+def call_db_agent_executor(input: str):
+    """
+    Call the database agent executor with the given input.
+    """
+    return db_agent_executor.invoke({
+        "input": input,
+    })
