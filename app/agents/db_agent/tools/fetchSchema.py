@@ -1,11 +1,10 @@
-from sqlmodel import create_engine
 from typing import Dict, List, Optional
 from pydantic import BaseModel
 from sqlalchemy import text as Text
 
 from app.db.connection import engine
+from langchain_core.tools import tool
 
-# --- 🧾 Types ---
 class Column(BaseModel):
     name: str
     type: str
@@ -14,19 +13,22 @@ class Column(BaseModel):
 
 class ForeignKey(BaseModel):
     column: str
-    references: Dict[str, str]  # {"table": ..., "column": ...}
+    references: Dict[str, str]
 
 class TableSchema(BaseModel):
     columns: List[Column]
     foreignKeys: List[ForeignKey]
 
 class DatabaseSchema(BaseModel):
-    schema: str
+    schema_name: str
     tables: Dict[str, TableSchema]
 
-# --- 🔧 Schema Fetcher ---
-def fetch_schema(*args, **kwargs) -> DatabaseSchema:
-    schema = DatabaseSchema(schema="public", tables={})
+@tool
+def fetch_schema() -> DatabaseSchema:
+    """
+    Fetches the schema of the PostgreSQL database, including tables, columns, and foreign keys.
+    """
+    schema = DatabaseSchema(schema_name="public", tables={})
 
     with engine.connect() as conn:
         # Step 1: Get all tables in public schema
@@ -37,8 +39,6 @@ def fetch_schema(*args, **kwargs) -> DatabaseSchema:
             WHERE table_schema = 'public' AND table_type = 'BASE TABLE';
         """
         )).fetchall()
-
-        print(tables)
 
         for table in tables:
             table_name = table[0]
@@ -56,8 +56,6 @@ def fetch_schema(*args, **kwargs) -> DatabaseSchema:
             """),{
                 "table_name": table_name
             }).fetchall()
-
-            print(columns)
 
             schema.tables[table_name].columns = [
                 Column(

@@ -1,11 +1,15 @@
 from sqlalchemy.exc import SQLAlchemyError
 from typing import List, Dict
 from sqlalchemy import text
+from langchain_core.tools import tool
 
 from app.db import engine
 
+@tool
 def run_query(query: str) -> List[Dict]:
-    print(f"Running query: {query}")
+    """
+    Executes a SQL query against the PostgreSQL database and returns the results as a list of dictionaries.
+    """
     # Ensure only SELECT statements are allowed
     if not query.strip().upper().startswith("SELECT"):
         raise ValueError("This function only supports SELECT queries for data retrieval.")

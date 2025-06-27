@@ -12,4 +12,6 @@ config = {
     "DB_NAME": os.getenv("DB_NAME","anvoon_local"),
     "GEMINI_API_KEY": os.getenv("GEMINI_API_KEY",""),
     "GEMINI_MODEL_ID" : os.getenv("GEMINI_MODEL_ID","gemini-2.0-flash"),
+    "OPENAI_API_KEY": os.getenv("OPENAI_API_KEY",""),
+    "OPENAI_MODEL_ID": os.getenv("OPENAI_MODEL_ID","gpt-4o-mini"),
 }
