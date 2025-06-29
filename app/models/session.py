@@ -11,6 +11,12 @@ class Session(BaseModel, table=True):
     
     __tablename__ = "sessions"
     
+    name: str = Field(
+        description="Name of the session",
+        max_length=100,
+        index=True
+    )
+    
     # Foreign key to user
     user_id: UUID = Field(
         foreign_key="users.id",

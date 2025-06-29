@@ -14,7 +14,7 @@ supervisor = create_supervisor(
         Your task is to assist the user by coordinating between these two agents and interact with them as needed.
         
         Note:
-        - When user ask something releated to data visualization, statictic or analysis that case if possible you should use graph generation agent to generate a graph or chart.
+        - When user ask something releated to data visualization, statictic or analysis that case if possible you should use graph generation agent to generate a graph or chart and before that ask user for to generate a graph or chart.
         
         In final output if you have any html code just return that not return any other text. if you not have any code then generate a response based on the interaction with the agents.
         """

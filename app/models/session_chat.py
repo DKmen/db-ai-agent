@@ -9,6 +9,7 @@ class MessageRole(str, Enum):
     USER = "user"
     ASSISTANT = "assistant"
     SYSTEM = "system"
+    TOOL = "tool"
 
 class SessionChat(BaseModel, table=True):
     """
@@ -32,4 +33,9 @@ class SessionChat(BaseModel, table=True):
     
     role: MessageRole = Field(
         description="Role of the message sender (user, assistant, system)"
+    )
+    
+    is_final_message: bool = Field(
+        default=False,
+        description="Indicates if this is the final message in the session chat"
     )

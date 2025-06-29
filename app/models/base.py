@@ -32,7 +32,7 @@ class BaseModel(SQLModel):
     )
     
     updated_at: Optional[datetime] = Field(
-        default=None,
+        default_factory=datetime.utcnow,
         description="Timestamp when the record was last updated",
         index=True
     )
