@@ -1,11 +1,10 @@
-from sqlmodel import create_engine
 from typing import Dict, List, Optional
 from pydantic import BaseModel
 from sqlalchemy import text as Text
 
-from app.db.connection import engine
+from sqlmodel import create_engine
+from langchain_core.tools import tool
 
-# --- 🧾 Types ---
 class Column(BaseModel):
     name: str
     type: str
@@ -14,19 +13,47 @@ class Column(BaseModel):
 
 class ForeignKey(BaseModel):
     column: str
-    references: Dict[str, str]  # {"table": ..., "column": ...}
+    references: Dict[str, str]
 
 class TableSchema(BaseModel):
     columns: List[Column]
     foreignKeys: List[ForeignKey]
 
 class DatabaseSchema(BaseModel):
-    schema: str
+    schema_name: str
     tables: Dict[str, TableSchema]
 
-# --- 🔧 Schema Fetcher ---
-def fetch_schema(*args, **kwargs) -> DatabaseSchema:
-    schema = DatabaseSchema(schema="public", tables={})
+@tool
+def fetch_schema(db_connection_url: str) -> DatabaseSchema:
+    """
+    Fetch and construct a comprehensive database schema from a PostgreSQL database. This function connects to a PostgreSQL database and retrieves complete schema information including tables, columns, and foreign key relationships from the 'public' schema.
+    
+    Args:
+        db_connection_url (str): The database connection URL in the format:
+            'postgresql://username:password@host:port/database_name'
+    Returns:
+        DatabaseSchema: A structured object containing:
+            - schema_name: The name of the schema (default: 'public')
+            - tables: Dictionary mapping table names to TableSchema objects, where each
+              TableSchema contains:
+                - columns: List of Column objects with name, type, nullable, and default properties
+                - foreignKeys: List of ForeignKey objects with column and reference information
+    Raises:
+        SQLAlchemyError: If there's an error connecting to the database or executing queries
+        ValueError: If the connection URL is invalid or malformed
+    Example:
+        >>> schema = fetch_schema('postgresql://user:pass@localhost:5432/mydb')
+        >>> print(schema.tables.keys())
+        dict_keys(['users', 'orders', 'products'])
+        >>> print(schema.tables['users'].columns[0].name)
+        'id'
+    Note:
+        - Only retrieves tables from the 'public' schema
+        - Only fetches BASE TABLE types (excludes views, temporary tables, etc.)
+        - Foreign key relationships are captured with full reference details
+    """
+    schema = DatabaseSchema(schema_name="public", tables={})
+    engine = create_engine(db_connection_url, echo=False)
 
     with engine.connect() as conn:
         # Step 1: Get all tables in public schema
@@ -37,8 +64,6 @@ def fetch_schema(*args, **kwargs) -> DatabaseSchema:
             WHERE table_schema = 'public' AND table_type = 'BASE TABLE';
         """
         )).fetchall()
-
-        print(tables)
 
         for table in tables:
             table_name = table[0]
@@ -56,8 +81,6 @@ def fetch_schema(*args, **kwargs) -> DatabaseSchema:
             """),{
                 "table_name": table_name
             }).fetchall()
-
-            print(columns)
 
             schema.tables[table_name].columns = [
                 Column(

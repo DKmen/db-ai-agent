@@ -1,9 +1,30 @@
 version: '3.8'
 
 services:
-  redis:
-    image: redis:latest
-    container_name: redis
+  db:
+    image: postgres:latest
+    container_name: postgres
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: postgres
     ports:
-      - "6379:6379"
-    restart: unless-stopped
+      - "5432:5432"
+    volumes:
+      - db:/var/lib/postgresql/data
+  
+  db-agent:
+    image: postgres:latest
+    container_name: db_agent
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: db_agent
+    ports:
+      - "5433:5432"
+    volumes:
+      - db_agent:/var/lib/postgresql/data
+
+volumes:
+  db:
+  db_agent:
